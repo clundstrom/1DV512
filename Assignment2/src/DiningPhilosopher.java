@@ -55,11 +55,18 @@ public class DiningPhilosopher {
 			if (DEBUG) {
 				System.out.println("\n>>> Asking all philosophers to stop\n");
 			}
-			
+
+
+			for(int i=0; i < philosophers.size(); i++){
+				philosophers.get(i).interrupt();
+			}
+
+
+
 			/*	TODO
 			 *  Stop all philosophers.
-			 *  Make sure all of the philosopher threads actually terminate!!!  
-			 *  
+			 *  Make sure all of the philosopher threads actually terminate!!!
+			 *
 			 *  Add comprehensive comments to explain your implementation.
 			 */
 
@@ -79,13 +86,17 @@ public class DiningPhilosopher {
 		//create the executor service
 		executorService = Executors.newFixedThreadPool(NUMBER_OF_PHILOSOPHERS);
 
-		/* TODO
-		 * Add chopsticks,
-		 * Add philosophers, and
-		 * Assign the corresponding chopsticks.
-		 * Add comprehensive comments to explain your implementation.
-		 */
 
+		// Create chopsticks, 1 for each philosopher.
+		for(int i=0; i < NUMBER_OF_PHILOSOPHERS; i++){
+			chopsticks.add(new Chopstick(i));
+		}
+
+		// Creates philosophers and assigns corresponding chopsticks
+		// Right = i, left = i + 1, create boundary with modulus of the chopstick sizes.
+		for(int i=0; i < chopsticks.size(); i++){
+			philosophers.add(new Philosopher(i, chopsticks.get((i+1)%chopsticks.size()), chopsticks.get(i), SEED, true));
+		}
 	}
 
 	public ArrayList<Philosopher> getPhilosophers() {
