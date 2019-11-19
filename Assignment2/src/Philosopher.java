@@ -24,8 +24,6 @@ public class Philosopher implements Runnable {
     private final Chopstick rightChopstick;
     private volatile boolean running;
     private State currentState;
-    boolean hasLeftChopstick;
-    boolean hasRightChopstick;
 
     private Random randomGenerator = new Random();
 
@@ -79,7 +77,7 @@ public class Philosopher implements Runnable {
     }
 
     public double getAverageHungryTime() {
-        return  hungryTime / numberOfHungryTurns;
+        return hungryTime / numberOfHungryTurns;
     }
 
     public int getNumberOfThinkingTurns() {
@@ -139,10 +137,11 @@ public class Philosopher implements Runnable {
         long waitTime = randomGenerator.nextInt(1000);
         eatingTime += waitTime;
         printState(currentState, waitTime);
-        releaseChopsticks();
+        unlockChopstick(leftChopstick);
+        unlockChopstick(rightChopstick);
     }
 
-    public void printState(State state, long time){
+    public void printState(State state, long time) {
         if (DEBUG) {
             System.out.println("Philosopher " + getId() + " is " + state.name() + " for " + time);
         }
@@ -163,35 +162,23 @@ public class Philosopher implements Runnable {
         printState(State.Finished, 0);
     }
 
-    private void releaseChopsticks() {
-        synchronized (leftChopstick.getLock()) {
-            if (hasLeftChopstick) {
-                leftChopstick.getLock().unlock();
-                System.out.println("Philosopher " + getId() + " released chopstick " + leftChopstick.getId());
-                hasLeftChopstick = false;
-            }
-
-
+    private void unlockChopstick(Chopstick chopstick) {
+        synchronized (chopstick.getLock()) {
+            chopstick.getLock().unlock();
+            //System.out.println("Philosopher " + getId() + " released chopstick " + chopstick.getId());
         }
-        synchronized (rightChopstick.getLock()) {
-            if (hasRightChopstick) {
-                rightChopstick.getLock().unlock();
-                System.out.println("Philosopher " + getId() + " released chopstick " + rightChopstick.getId());
-                hasRightChopstick = false;
-            }
-        }
-
     }
 
 
     /**
      * Picks up and locks chopstick.
+     *
      * @param chopstick
      */
     private void lockChopstick(Chopstick chopstick) {
-        synchronized (chopstick){
+        synchronized (chopstick) {
             chopstick.getLock().lock();
-            System.out.println("Philosopher " + getId() + " picked up chopstick " + chopstick.getId());
+            //System.out.println("Philosopher " + getId() + " picked up chopstick " + chopstick.getId());
         }
     }
 }
