@@ -132,6 +132,7 @@ public class Philosopher implements Runnable {
     private void eat() {
         lockChopstick(leftChopstick);
         lockChopstick(rightChopstick);
+
         numberOfEatingTurns++;
         currentState = State.Eating;
         long waitTime = randomGenerator.nextInt(1000);
@@ -165,7 +166,7 @@ public class Philosopher implements Runnable {
     private void unlockChopstick(Chopstick chopstick) {
         synchronized (chopstick.getLock()) {
             chopstick.getLock().unlock();
-            //System.out.println("Philosopher " + getId() + " released chopstick " + chopstick.getId());
+            System.out.println("Philosopher " + getId() + " released chopstick " + chopstick.getId());
         }
     }
 
@@ -178,7 +179,7 @@ public class Philosopher implements Runnable {
     private void lockChopstick(Chopstick chopstick) {
         synchronized (chopstick) {
             chopstick.getLock().lock();
-            //System.out.println("Philosopher " + getId() + " picked up chopstick " + chopstick.getId());
+            System.out.println("Philosopher " + getId() + " picked up chopstick " + chopstick.getId());
         }
     }
 }
