@@ -44,8 +44,6 @@ public class Philosopher implements Runnable {
         this.running = true;
         this.DEBUG = debug;
         currentState = State.Thinking;
-        hasLeftChopstick = false;
-        hasRightChopstick = false;
 
         /*
          * set the seed for this philosopher. To differentiate the seed from the other philosophers, we add the philosopher id to the seed.
@@ -134,14 +132,14 @@ public class Philosopher implements Runnable {
     }
 
     private void eat() {
-        pickupChopsticks();
+        lockChopstick(leftChopstick);
+        lockChopstick(rightChopstick);
         numberOfEatingTurns++;
         currentState = State.Eating;
         long waitTime = randomGenerator.nextInt(1000);
         eatingTime += waitTime;
         printState(currentState, waitTime);
         releaseChopsticks();
-
     }
 
     public void printState(State state, long time){
@@ -163,33 +161,6 @@ public class Philosopher implements Runnable {
 
         currentState = State.Finished;
         printState(State.Finished, 0);
-        /* TODO
-         * (Initialize some additional variables, if necessary)
-         *
-         * Think,
-         * Get hungry,
-         * Pick up the left and then the right chopstick,
-         * Eat,
-         * Release the chopsticks.
-         * ^^^ Repeat until the thread is interrupted
-         *
-         * Increment the thinking/hungry/eating turns counter *when each turn starts*.
-         *
-         * Update the duration of each turn *after the turn is completely finished*.
-         * Keep track of total hungry turn durations by getting the current timestamp with System.currentTimeMillis()
-         * when the turn starts, then another System.currentTimeMillis() after the turn has finished, and subtracting these.
-         * For thinking and eating turns, use the duration generated with randomGenerator.nextInt(1000).
-         *
-         * If DEBUG is true, print the log messages for each event.
-         * Additionally, you might want to print a message such as "philosopher X has finished" when the thread terminates
-         * (for debugging purposes).
-         *
-         *
-         * Add comprehensive comments to explain your implementation, including deadlock prevention/detection.
-         * You should start with a straightforward implementation, but you will eventually have to make it more sophisticated
-         * w.r.t the order (and conditions) of the actions and the threads synchronization in order to pass the tests with the expected results!
-         */
-
     }
 
     private void releaseChopsticks() {
@@ -212,19 +183,15 @@ public class Philosopher implements Runnable {
 
     }
 
-    private void pickupChopsticks() {
 
-        synchronized (leftChopstick.getLock()){
-            // Only one thread can run this code
-            leftChopstick.getLock().lock();
-            System.out.println("Philosopher " + getId() + " picked up chopstick " + leftChopstick.getId());
-            hasLeftChopstick = true;
-
-
-            rightChopstick.getLock().lock();
-            System.out.println("Philosopher " + getId() + " picked up chopstick " + rightChopstick.getId());
-            hasRightChopstick = true;
+    /**
+     * Picks up and locks chopstick.
+     * @param chopstick
+     */
+    private void lockChopstick(Chopstick chopstick) {
+        synchronized (chopstick){
+            chopstick.getLock().lock();
+            System.out.println("Philosopher " + getId() + " picked up chopstick " + chopstick.getId());
         }
-
     }
 }
