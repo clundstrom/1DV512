@@ -73,15 +73,15 @@ public class Philosopher implements Runnable {
 
     public double getAverageThinkingTime() {
 
-        return numberOfThinkingTurns / thinkingTime;
+        return thinkingTime / numberOfThinkingTurns;
     }
 
     public double getAverageEatingTime() {
-        return numberOfEatingTurns / eatingTime;
+        return eatingTime / numberOfEatingTurns;
     }
 
     public double getAverageHungryTime() {
-        return numberOfHungryTurns / hungryTime;
+        return  hungryTime / numberOfHungryTurns;
     }
 
     public int getNumberOfThinkingTurns() {
@@ -114,63 +114,55 @@ public class Philosopher implements Runnable {
     }
 
 
-    private synchronized void think() {
+    private void think() {
         numberOfThinkingTurns++;
         currentState = State.Thinking;
         long waitTime = randomGenerator.nextInt(1000);
-
+        printState(currentState, waitTime);
+        thinkingTime += waitTime;
         try {
             Thread.sleep(waitTime);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            thinkingTime += waitTime;
         }
-        printState();
-
     }
 
-    private synchronized void hungry() {
-        long hungry = System.currentTimeMillis();
+    private void hungry() {
         numberOfHungryTurns++;
         currentState = State.Hungry;
-        printState();
-
-        hungryTime += System.currentTimeMillis() - hungry;
+        System.out.println("Philosopher " + getId() + " is " + currentState.name());
     }
 
     private void eat() {
         pickupChopsticks();
         numberOfEatingTurns++;
         currentState = State.Eating;
-        printState();
         long waitTime = randomGenerator.nextInt(1000);
-        try {
-            Thread.sleep(waitTime);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            eatingTime += waitTime;
-        }
+        eatingTime += waitTime;
+        printState(currentState, waitTime);
         releaseChopsticks();
+
     }
 
-    public void printState() {
+    public void printState(State state, long time){
         if (DEBUG) {
-            System.out.println("Philosopher " + getId() + " is " + currentState.name());
+            System.out.println("Philosopher " + getId() + " is " + state.name() + " for " + time);
         }
     }
+
 
     @Override
     public void run() {
         while (running) {
             think();
+            long hungry = System.currentTimeMillis();
             hungry();
             eat();
+            hungryTime += System.currentTimeMillis() - hungry;
         }
 
         currentState = State.Finished;
-        printState();
+        printState(State.Finished, 0);
         /* TODO
          * (Initialize some additional variables, if necessary)
          *
@@ -202,34 +194,37 @@ public class Philosopher implements Runnable {
 
     private void releaseChopsticks() {
         synchronized (leftChopstick.getLock()) {
-            if(hasLeftChopstick){
+            if (hasLeftChopstick) {
                 leftChopstick.getLock().unlock();
                 System.out.println("Philosopher " + getId() + " released chopstick " + leftChopstick.getId());
                 hasLeftChopstick = false;
             }
+
+
         }
         synchronized (rightChopstick.getLock()) {
-            if(hasRightChopstick){
+            if (hasRightChopstick) {
                 rightChopstick.getLock().unlock();
                 System.out.println("Philosopher " + getId() + " released chopstick " + rightChopstick.getId());
                 hasRightChopstick = false;
             }
         }
+
     }
 
     private void pickupChopsticks() {
-        synchronized (leftChopstick.getLock()) {
-                leftChopstick.getLock().lock();
-                System.out.println("Philosopher " + getId() + " picked up chopstick " + leftChopstick.getId());
-                hasLeftChopstick = true;
+
+        synchronized (leftChopstick.getLock()){
+            // Only one thread can run this code
+            leftChopstick.getLock().lock();
+            System.out.println("Philosopher " + getId() + " picked up chopstick " + leftChopstick.getId());
+            hasLeftChopstick = true;
+
+
+            rightChopstick.getLock().lock();
+            System.out.println("Philosopher " + getId() + " picked up chopstick " + rightChopstick.getId());
+            hasRightChopstick = true;
         }
 
-        synchronized (rightChopstick.getLock()) {
-            if (hasLeftChopstick) {
-                rightChopstick.getLock().lock();
-                System.out.println("Philosopher " + getId() + " picked up chopstick " + rightChopstick.getId());
-                hasRightChopstick = true;
-            }
-        }
     }
 }
