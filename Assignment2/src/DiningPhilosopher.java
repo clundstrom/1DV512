@@ -57,19 +57,6 @@ public class DiningPhilosopher {
 			}
 
 
-			for(int i=0; i < philosophers.size(); i++){
-				philosophers.get(i).interrupt();
-			}
-
-
-
-			/*	TODO
-			 *  Stop all philosophers.
-			 *  Make sure all of the philosopher threads actually terminate!!!
-			 *
-			 *  Add comprehensive comments to explain your implementation.
-			 */
-
 		} finally {
 			executorService.shutdown();
 			executorService.awaitTermination(10, TimeUnit.MILLISECONDS);
@@ -111,16 +98,16 @@ public class DiningPhilosopher {
 	public void printTable() {
 		DecimalFormat df2 = new DecimalFormat(".##");
 		System.out.println("\n---------------------------------------------------");
-		System.out.println("PID \tATT \tAET \tAHT \t#TT \t#ET \t#HT");
+		System.out.println("PID \tATT \t\tAET \t\tAHT \t#TT \t#ET \t#HT");
 
 		for (Philosopher p : philosophers) {
-			System.out.println(p.getId() + "\t"
-					+ df2.format(p.getAverageThinkingTime()) + "\t"
-					+ df2.format(p.getAverageEatingTime()) + "\t"
-					+ df2.format(p.getAverageHungryTime()) + "\t"
-					+ p.getNumberOfThinkingTurns() + "\t"
-					+ p.getNumberOfEatingTurns() + "\t"
-					+ p.getNumberOfHungryTurns() + "\t");
+			System.out.println(p.getId() + "\t\t"
+					+ df2.format(p.getAverageThinkingTime()) + "\t\t"
+					+ df2.format(p.getAverageEatingTime()) + "\t\t"
+					+ df2.format(p.getAverageHungryTime()) + "\t\t"
+					+ p.getNumberOfThinkingTurns() + "\t\t"
+					+ p.getNumberOfEatingTurns() + "\t\t"
+					+ p.getNumberOfHungryTurns() + "\t\t");
 		}
 
 		System.out.println("---------------------------------------------------\n");

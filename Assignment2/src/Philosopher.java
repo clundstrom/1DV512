@@ -34,6 +34,7 @@ public class Philosopher implements Runnable {
     private double thinkingTime = 0;
     private double eatingTime = 0;
     private double hungryTime = 0;
+    private boolean canEat;
 
     public Philosopher(int id, Chopstick leftChopstick, Chopstick rightChopstick, int seed, boolean debug) {
         this.id = id;
@@ -42,23 +43,7 @@ public class Philosopher implements Runnable {
         this.running = true;
         this.DEBUG = debug;
         currentState = State.Thinking;
-
-        /*
-         * set the seed for this philosopher. To differentiate the seed from the other philosophers, we add the philosopher id to the seed.
-         * the seed makes sure that the random numbers are the same every time the application is executed
-         * the random number is not the same between multiple calls within the same program execution
-
-         * NOTE
-         * In order to get the same average values use the seed 100, and set the id of the philosopher starting from 0 to 4 (0,1,2,3,4).
-         * Each philosopher sets the seed to the random number generator as seed+id.
-         * The seed for each philosopher is as follows:
-         * 	 	P0.seed = 100 + P0.id = 100 + 0 = 100
-         * 		P1.seed = 100 + P1.id = 100 + 1 = 101
-         * 		P2.seed = 100 + P2.id = 100 + 2 = 102
-         * 		P3.seed = 100 + P3.id = 100 + 3 = 103
-         * 		P4.seed = 100 + P4.id = 100 + 4 = 104
-         * Therefore, if the ids of the philosophers are not 0,1,2,3,4 then different random numbers will be generated.
-         */
+        canEat = false;
 
         randomGenerator.setSeed(id + seed);
     }
@@ -105,42 +90,53 @@ public class Philosopher implements Runnable {
     }
 
 
-    public void interrupt() {
-        running = false;
-    }
-
-
+    /**
+     *
+     */
     private void think() {
         numberOfThinkingTurns++;
         currentState = State.Thinking;
         long waitTime = randomGenerator.nextInt(1000);
         printState(currentState, waitTime);
-        thinkingTime += waitTime;
         try {
             Thread.sleep(waitTime);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+        }
+        thinkingTime += waitTime;
+    }
+
+
+    /**
+     * Sets current state to hungry and increments hungryturns.
+     */
+    private void hungry() {
+        numberOfHungryTurns++;
+        currentState = State.Hungry;
+        if(DEBUG){
+            System.out.println("Philosopher " + getId() + " is " + currentState.name());
         }
     }
 
-    private void hungry() {
-        numberOfHungryTurns++;
-        long hungry = System.currentTimeMillis();
-        currentState = State.Hungry;
-        System.out.println("Philosopher " + getId() + " is " + currentState.name());
-        lockChopstick(leftChopstick);
-        lockChopstick(rightChopstick);
-        hungryTime += System.currentTimeMillis() - hungry;
-    }
-
+    /**
+     * Increments the number of turns eating and sleeps for a specified amount of time.
+     */
     private void eat() {
         numberOfEatingTurns++;
         currentState = State.Eating;
         long waitTime = randomGenerator.nextInt(1000);
         printState(currentState, waitTime);
+        try {
+            Thread.sleep(waitTime);
+        } catch (InterruptedException e) {
+        }
         eatingTime += waitTime;
     }
 
+    /**
+     * Prints the current state
+     * @param state
+     * @param time
+     */
     public void printState(State state, long time) {
         if (DEBUG) {
             System.out.println("Philosopher " + getId() + " is " + state.name() + " for " + time);
@@ -148,41 +144,48 @@ public class Philosopher implements Runnable {
     }
 
 
+    /**
+     *
+     *
+     */
     @Override
     public void run() {
         while (running) {
-            try{
-                think();
-                hungry();
-                eat();
-            }
-            finally{
-                unlockChopstick(leftChopstick);
-                unlockChopstick(rightChopstick);
-            }
-        }
-
-        currentState = State.Finished;
-        printState(State.Finished, 0);
-    }
-
-    private void unlockChopstick(Chopstick chopstick) {
-        synchronized (chopstick) {
-            chopstick.getLock().unlock();
-            System.out.println("Philosopher " + getId() + " released chopstick " + chopstick.getId());
+            think();
+            long startHungry = System.currentTimeMillis();
+            hungry();
+            this.hungryTime += System.currentTimeMillis()-startHungry;
+            getChopSticks();
         }
     }
-
 
     /**
-     * Picks up and locks chopstick.
-     *
-     * @param chopstick
+     * Fetches the chopsticks by continuously picking up the first, then trying for the second.
+     * If the second is not available it returns the left and tries again.
      */
-    private void lockChopstick(Chopstick chopstick) {
-        synchronized (chopstick) {
-            chopstick.getLock().lock();
-            System.out.println("Philosopher " + getId() + " picked up chopstick " + chopstick.getId());
+    private void getChopSticks() {
+        while (!canEat) {
+            if (leftChopstick.getLock().tryLock()) {
+
+                if (rightChopstick.getLock().tryLock()) {
+                    canEat = true;
+
+                    if(DEBUG) {
+                        System.out.println("Philosopher " + getId() + " picked up chopstick " + leftChopstick.getId());
+                        System.out.println("Philosopher " + getId() + " picked up chopstick " + rightChopstick.getId());
+                    }
+                    eat();
+                    // Unlock right and left after eating.
+                    rightChopstick.getLock().unlock();
+                    leftChopstick.getLock().unlock();
+                } else {
+                    // Unlock left if right not available.
+                    leftChopstick.getLock().unlock();
+                }
+                //try again.
+            }
         }
+        canEat = false;
+        // back to thinking
     }
 }
