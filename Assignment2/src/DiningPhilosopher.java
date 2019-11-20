@@ -98,7 +98,7 @@ public class DiningPhilosopher {
 	public void printTable() {
 		DecimalFormat df2 = new DecimalFormat(".##");
 		System.out.println("\n---------------------------------------------------");
-		System.out.println("PID \tATT \t\tAET \t\tAHT \t#TT \t#ET \t#HT");
+		System.out.println("PID \tATT \t\tAET \t\tAHT \t\t#TT \t#ET \t#HT");
 
 		for (Philosopher p : philosophers) {
 			System.out.println(p.getId() + "\t\t"

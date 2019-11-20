@@ -134,9 +134,9 @@ public class Philosopher implements Runnable {
     }
 
     /**
-     * Prints the current state.
-     * @param state
-     * @param time
+     * Prints the philosophers state.
+     * @param state Thinking/Hungry/Eating/Finished
+     * @param time amount of time spent doing so.
      */
     public void printState(PhilosopherState state, long time) {
         if (DEBUG) {
@@ -156,8 +156,8 @@ public class Philosopher implements Runnable {
             think();
             long startHungry = System.currentTimeMillis();
             hungry();
-            this.hungryTime += System.currentTimeMillis()-startHungry;
             getChopSticks();
+            this.hungryTime += System.currentTimeMillis()-startHungry;
         }
         printState(PhilosopherState.Finished, 0);
     }
