@@ -16,14 +16,14 @@ public class Philosopher implements Runnable {
      * 		for example: philosopher # is eating;
      * 		philosopher # picked up the left chopstick (chopstick #)
      */
-    public boolean DEBUG = true;
+    public volatile boolean DEBUG = true;
 
     private int id;
 
     private final Chopstick leftChopstick;
     private final Chopstick rightChopstick;
     private volatile boolean running;
-    private State currentState;
+    private PhilosopherState currentState;
 
     private Random randomGenerator = new Random();
 
@@ -42,7 +42,7 @@ public class Philosopher implements Runnable {
         this.rightChopstick = rightChopstick;
         this.running = true;
         this.DEBUG = debug;
-        currentState = State.Thinking;
+        currentState = PhilosopherState.Thinking;
         canEat = false;
 
         randomGenerator.setSeed(id + seed);
@@ -91,11 +91,12 @@ public class Philosopher implements Runnable {
 
 
     /**
-     *
+     * Simulates thinking by incrementing turn and calculating a specific amount of time to be waited.
+     * Sleeps for a while then adds the time slept to global thinking-time.
      */
     private void think() {
         numberOfThinkingTurns++;
-        currentState = State.Thinking;
+        currentState = PhilosopherState.Thinking;
         long waitTime = randomGenerator.nextInt(1000);
         printState(currentState, waitTime);
         try {
@@ -107,11 +108,11 @@ public class Philosopher implements Runnable {
 
 
     /**
-     * Sets current state to hungry and increments hungryturns.
+     * Sets current state to hungry and increments hungry-turns.
      */
     private void hungry() {
         numberOfHungryTurns++;
-        currentState = State.Hungry;
+        currentState = PhilosopherState.Hungry;
         if(DEBUG){
             System.out.println("Philosopher " + getId() + " is " + currentState.name());
         }
@@ -122,7 +123,7 @@ public class Philosopher implements Runnable {
      */
     private void eat() {
         numberOfEatingTurns++;
-        currentState = State.Eating;
+        currentState = PhilosopherState.Eating;
         long waitTime = randomGenerator.nextInt(1000);
         printState(currentState, waitTime);
         try {
@@ -133,11 +134,11 @@ public class Philosopher implements Runnable {
     }
 
     /**
-     * Prints the current state
+     * Prints the current state.
      * @param state
      * @param time
      */
-    public void printState(State state, long time) {
+    public void printState(PhilosopherState state, long time) {
         if (DEBUG) {
             System.out.println("Philosopher " + getId() + " is " + state.name() + " for " + time);
         }
@@ -145,8 +146,9 @@ public class Philosopher implements Runnable {
 
 
     /**
+     * Simulates the lifecycle of the thread.
      *
-     *
+     * Starts by thinking -> becoming hungry -> aquiring chopsticks and then finally eat.
      */
     @Override
     public void run() {
@@ -157,6 +159,7 @@ public class Philosopher implements Runnable {
             this.hungryTime += System.currentTimeMillis()-startHungry;
             getChopSticks();
         }
+        printState(PhilosopherState.Finished, 0);
     }
 
     /**
@@ -166,10 +169,8 @@ public class Philosopher implements Runnable {
     private void getChopSticks() {
         while (!canEat) {
             if (leftChopstick.getLock().tryLock()) {
-
                 if (rightChopstick.getLock().tryLock()) {
                     canEat = true;
-
                     if(DEBUG) {
                         System.out.println("Philosopher " + getId() + " picked up chopstick " + leftChopstick.getId());
                         System.out.println("Philosopher " + getId() + " picked up chopstick " + rightChopstick.getId());
@@ -182,10 +183,10 @@ public class Philosopher implements Runnable {
                     // Unlock left if right not available.
                     leftChopstick.getLock().unlock();
                 }
-                //try again.
+                // Loop back and try again.
             }
         }
         canEat = false;
-        // back to thinking
+        // Reset canEat and go back to thinking
     }
 }

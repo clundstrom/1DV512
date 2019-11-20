@@ -82,7 +82,7 @@ public class DiningPhilosopher {
 		// Creates philosophers and assigns corresponding chopsticks
 		// Right = i, left = i + 1, create boundary with modulus of the chopstick sizes.
 		for(int i=0; i < chopsticks.size(); i++){
-			philosophers.add(new Philosopher(i, chopsticks.get((i+1)%chopsticks.size()), chopsticks.get(i), SEED, true));
+			philosophers.add(new Philosopher(i, chopsticks.get((i+1)%chopsticks.size()), chopsticks.get(i), SEED, DEBUG));
 		}
 	}
 

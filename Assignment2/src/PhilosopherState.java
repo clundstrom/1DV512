@@ -1,3 +1,3 @@
-public enum State {
+public enum PhilosopherState {
     Thinking, Hungry, Eating, Finished
 }
