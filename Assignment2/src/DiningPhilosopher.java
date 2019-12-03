@@ -56,7 +56,9 @@ public class DiningPhilosopher {
 				System.out.println("\n>>> Asking all philosophers to stop\n");
 			}
 
-
+			for(Philosopher p : philosophers){
+				p.shutdown();
+			}
 		} finally {
 			executorService.shutdown();
 			executorService.awaitTermination(10, TimeUnit.MILLISECONDS);

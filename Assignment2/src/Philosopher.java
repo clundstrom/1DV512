@@ -145,6 +145,10 @@ public class Philosopher implements Runnable {
     }
 
 
+    void shutdown(){
+        running = false;
+        DEBUG = false;
+    }
     /**
      * Simulates the lifecycle of the thread.
      *
