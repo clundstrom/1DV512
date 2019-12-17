@@ -145,7 +145,7 @@ public class Philosopher implements Runnable {
     }
 
 
-    void shutdown(){
+    synchronized void shutdown(){
         running = false;
         DEBUG = false;
     }

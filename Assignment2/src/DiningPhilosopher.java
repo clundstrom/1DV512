@@ -21,7 +21,7 @@ public class DiningPhilosopher {
 	 * 		for example: philosopher # is eating;
 	 * 		philosopher # picked up the left chopstick (chopstick #)
 	 */
-	public boolean DEBUG = false;
+	public boolean DEBUG = true;
 	
 	private final int NUMBER_OF_PHILOSOPHERS = 5;
 	private int SIMULATION_TIME = 10000;
